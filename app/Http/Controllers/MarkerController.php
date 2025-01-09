@@ -48,9 +48,9 @@ class MarkerController extends Controller
         }
     }
 
-    // MarkerController.php
     public function index()
     {
-        return Marker::all();
+        $markers = Marker::all();
+        return view('index', compact('markers')); // This passes $markers to the view
     }
 }

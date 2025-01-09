@@ -81,8 +81,49 @@
         @endif
     </div>
 
-    <!-- Scripts -->
-    <script src="{{ asset('assets/script.js') }}"></script>
-</body>
 
-</html>
+    <!-- Data Table Section -->
+    <div class="container mx-auto mt-8">
+        <h2 class="text-lg font-bold mb-4">Data Lokasi</h2>
+        <div class="overflow-x-auto shadow-lg rounded-lg">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                    <tr>
+                        <th class="py-3 px-4 text-left">Nama</th>
+                        <th class="py-3 px-4 text-left">Deskripsi</th>
+                        <th class="py-3 px-4 text-left">Alamat</th>
+                        <th class="py-3 px-4 text-left">Harga</th>
+                        <th class="py-3 px-4 text-left">Rating</th>
+                        <th class="py-3 px-4 text-left">Latitude</th>
+                        <th class="py-3 px-4 text-left">Longitude</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($markers as $marker)
+                        <tr class="border-t">
+                            <td class="py-2 px-4">{{ $marker->name }}</td>
+                            <td class="py-2 px-4">{{ $marker->description }}</td>
+                            <td class="py-2 px-4">{{ $marker->address }}</td>
+                            <td class="py-2 px-4">{{ $marker->price }}</td>
+                            <td class="py-2 px-4">{{ $marker->rate }}/5</td>
+                            <td class="py-2 px-4">{{ $marker->latitude }}</td>
+                            <td class="py-2 px-4">{{ $marker->longitude }}</td>
+                        </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="py-2 px-4 text-center text-gray-600">Tidak ada data yang tersedia.
+                                </td>
+                            </tr>
+                        @endforelse
+
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="{{ asset('assets/script.js') }}"></script>
+    </body>
+
+    </html>

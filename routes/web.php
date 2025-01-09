@@ -25,7 +25,9 @@ Route::get('/markers/create', function () {
 
 use App\Http\Controllers\MarkerController;
 
+
+
+// This is the correct route definition
 Route::get('/markers/create', [MarkerController::class, 'create'])->name('markers.create');
 Route::post('/markers', [MarkerController::class, 'store'])->name('markers.store');
-
-Route::get('/api/markers', [MarkerController::class, 'index']);
+Route::get('/markers', [MarkerController::class, 'index'])->name('index');
