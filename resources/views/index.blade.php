@@ -99,7 +99,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($markers as $marker)
+                    @forelse ($markers as $marker)
                         <tr class="border-t">
                             <td class="py-2 px-4">{{ $marker->name }}</td>
                             <td class="py-2 px-4">{{ $marker->description }}</td>
@@ -109,21 +109,22 @@
                             <td class="py-2 px-4">{{ $marker->latitude }}</td>
                             <td class="py-2 px-4">{{ $marker->longitude }}</td>
                         </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="py-2 px-4 text-center text-gray-600">Tidak ada data yang tersedia.
-                                </td>
-                            </tr>
-                        @endforelse
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-2 px-4 text-center text-gray-600">Tidak ada data yang tersedia.
+                            </td>
+                        </tr>
+                    @endforelse
 
-                    </tbody>
 
-                </table>
-            </div>
+                </tbody>
+
+            </table>
         </div>
+    </div>
 
-        <!-- Scripts -->
-        <script src="{{ asset('assets/script.js') }}"></script>
-    </body>
+    <!-- Scripts -->
+    <script src="{{ asset('assets/script.js') }}"></script>
+</body>
 
-    </html>
+</html>

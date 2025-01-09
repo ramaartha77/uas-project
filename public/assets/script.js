@@ -13,7 +13,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // Function to fetch markers from the database
 async function fetchMarkers() {
     try {
-        const response = await fetch('/api/markers');
+        const response = await fetch('/api/markers'); // Ensure API route is properly defined in Laravel
+        if (!response.ok) {
+            throw new Error('Failed to fetch markers.');
+        }
         const markers = await response.json();
         return markers;
     } catch (error) {
@@ -22,7 +25,7 @@ async function fetchMarkers() {
     }
 }
 
-// Function to create Leaflet popup content
+// Functions to create popup content for Leaflet and Google Maps
 function createLeafletPopupContent(marker) {
     return `
         <div class="flex flex-col md:flex-row max-w-md rounded overflow-hidden shadow-lg bg-white">
@@ -64,8 +67,6 @@ function createLeafletPopupContent(marker) {
 }
 
 
-
-// Function to create Google Maps info window content
 function createGoogleMapsInfoContent(marker) {
     return `
         <div style="display: flex; max-width: 350px; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);">
@@ -110,26 +111,21 @@ function createGoogleMapsInfoContent(marker) {
 async function addMarkersToMaps() {
     const markers = await fetchMarkers();
 
-    markers.forEach(markerData => {
+    markers.forEach(marker => {
         // Add marker to Leaflet map
-        const leafletMarker = L.marker([markerData.latitude, markerData.longitude])
+        const leafletMarker = L.marker([marker.latitude, marker.longitude])
             .addTo(leafletMap)
-            .bindPopup(createLeafletPopupContent(markerData), {
-                maxWidth: 300,
-                className: 'custom-popup'
-            });
+            .bindPopup(createLeafletPopupContent(marker));
 
         // Add marker to Google Maps
         const googleMarker = new google.maps.Marker({
-            position: { lat: parseFloat(markerData.latitude), lng: parseFloat(markerData.longitude) },
+            position: { lat: parseFloat(marker.latitude), lng: parseFloat(marker.longitude) },
             map: googleMap,
-            title: markerData.name
+            title: marker.name
         });
 
-        // Add info window to Google marker
         const infoWindow = new google.maps.InfoWindow({
-            content: createGoogleMapsInfoContent(markerData),
-            maxWidth: 300
+            content: createGoogleMapsInfoContent(marker)
         });
 
         googleMarker.addListener('click', () => {
@@ -137,15 +133,13 @@ async function addMarkersToMaps() {
         });
     });
 
-    // If there are markers, center the maps on the first one
+    // Center maps on the first marker
     if (markers.length > 0) {
         const firstMarker = markers[0];
-        const position = { lat: parseFloat(firstMarker.latitude), lng: parseFloat(firstMarker.longitude) };
-
-        leafletMap.setView([position.lat, position.lng], 12);
-        googleMap.setCenter(position);
+        leafletMap.setView([firstMarker.latitude, firstMarker.longitude], 12);
+        googleMap.setCenter({ lat: parseFloat(firstMarker.latitude), lng: parseFloat(firstMarker.longitude) });
     }
 }
 
-// Initialize markers when the page loads
+// Load markers when the page loads
 document.addEventListener('DOMContentLoaded', addMarkersToMaps);
