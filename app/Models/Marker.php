@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Marker extends Model
 {
     use HasFactory;
+    protected $table = 'markers';
 
     protected $fillable = [
         'name',

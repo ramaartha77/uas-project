@@ -13,19 +13,20 @@
 </head>
 
 <body class="bg-gray-100 font-sans min-h-screen">
+
     <!-- Navigation -->
-    <nav class="bg-white shadow-md p-4 mb-10 ">
-        <div class="container mx-auto flex items-center justify-between ">
+    <nav class="bg-white shadow-md p-4 mb-10">
+        <div class="container mx-auto flex items-center justify-between">
             <div class="flex space-x-6">
                 <a href="{{ route('markers.create') }}"
                     class="text-gray-800 hover:text-blue-600 transition duration-300 flex items-center">
                     <i class="fas fa-plus-circle mr-2"></i>
-                    <span class="font-semibold">Form Add Data</span>
+                    <span class="font-semibold">Add New Data</span>
                 </a>
                 <a href="{{ route('index') }}"
                     class="text-gray-800 hover:text-blue-600 transition duration-300 flex items-center">
                     <i class="fas fa-map-marked-alt mr-2"></i>
-                    <span class="font-semibold">Maps</span>
+                    <span class="font-semibold">View Map</span>
                 </a>
             </div>
         </div>
@@ -35,6 +36,24 @@
     <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">Add New Location Marker</h2>
 
+        <!-- Success or Error Messages -->
+        @if (session('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+                <p>{{ session('success') }}</p>
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <!-- Add Marker Form -->
         <form action="{{ route('markers.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
@@ -109,6 +128,58 @@
             </div>
         </form>
     </div>
+
+    <!-- Data Table Section -->
+    <div class="container mx-auto mt-8">
+        <h2 class="text-lg font-bold mb-4">Data Lokasi</h2>
+        <div class="overflow-x-auto shadow-lg rounded-lg">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-800 text-white">
+                    <tr>
+                        <th class="py-3 px-4 text-left">Name</th>
+                        <th class="py-3 px-4 text-left">Description</th>
+                        <th class="py-3 px-4 text-left">Address</th>
+                        <th class="py-3 px-4 text-left">Price</th>
+                        <th class="py-3 px-4 text-left">Rating</th>
+                        <th class="py-3 px-4 text-left">Latitude</th>
+                        <th class="py-3 px-4 text-left">Longitude</th>
+                        <th class="py-3 px-4 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($markers as $marker)
+                        <tr class="border-t">
+                            <td class="py-2 px-4">{{ $marker->name }}</td>
+                            <td class="py-2 px-4">{{ $marker->description }}</td>
+                            <td class="py-2 px-4">{{ $marker->address }}</td>
+                            <td class="py-2 px-4">{{ $marker->price }}</td>
+                            <td class="py-2 px-4">{{ $marker->rate }}/5</td>
+                            <td class="py-2 px-4">{{ $marker->latitude }}</td>
+                            <td class="py-2 px-4">{{ $marker->longitude }}</td>
+                            <td class="py-2 px-4 flex space-x-2">
+                                <a href="{{ route('markers.edit', $marker->id) }}"
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded text-sm">Edit</a>
+                                <form action="{{ route('markers.destroy', $marker->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded text-sm"
+                                        onclick="return confirm('Are you sure you want to delete this marker?')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="py-2 px-4 text-center text-gray-600">No data available.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </body>
 
 </html>
