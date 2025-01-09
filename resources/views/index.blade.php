@@ -24,6 +24,39 @@
 
 </head>
 
+<style>
+    .leaflet-popup-content {
+        margin: 0;
+        max-width: 200px;
+    }
+
+    .leaflet-popup-content p {
+        margin: 0.5em 0
+    }
+
+    .gm-style .gm-style-iw-c {
+        padding: 0;
+    }
+
+    .gm-style .gm-style-iw-c,
+    .gm-style .gm-style-iw-d {
+        max-height: none !important;
+        max-width: 200px;
+    }
+
+    .gm-style-iw-chr {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 10;
+    }
+
+    .gm-style-iw-d {
+        overflow: visible;
+        max-height: none
+    }
+</style>
+
 <body class="bg-gray-100 font-sans min-h-screen">
     <!-- Navigation -->
     <nav class="bg-white shadow-md p-4">
