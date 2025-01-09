@@ -178,11 +178,12 @@ async function addMarkersToMaps() {
             title: marker.name,
         });
 
-        const infoWindow = new google.maps.InfoWindow({
-            content: createGoogleMapsInfoContent(marker),
-        });
-
+        // Add click listener for Google Maps marker
         googleMarker.addListener("click", () => {
+            // Create a new InfoWindow for each click
+            const infoWindow = new google.maps.InfoWindow({
+                content: createGoogleMapsInfoContent(marker),
+            });
             infoWindow.open(googleMap, googleMarker);
         });
     });
@@ -198,5 +199,47 @@ async function addMarkersToMaps() {
     }
 }
 
+// Function to show popup for the marker
+function showPopup(marker) {
+    // Menampilkan popup di Leaflet
+    const leafletMarker = L.marker([marker.latitude, marker.longitude]).addTo(
+        leafletMap
+    );
+    leafletMarker.bindPopup(createLeafletPopupContent(marker)).openPopup();
+
+    // Menampilkan info window di Google Maps
+    const googleMarker = new google.maps.Marker({
+        position: {
+            lat: parseFloat(marker.latitude),
+            lng: parseFloat(marker.longitude),
+        },
+        map: googleMap,
+        title: marker.name,
+    });
+
+    // Buat InfoWindow baru setiap kali
+    const infoWindow = new google.maps.InfoWindow({
+        content: createGoogleMapsInfoContent(marker),
+    });
+
+    infoWindow.open(googleMap, googleMarker);
+
+    // Tambahkan event listener untuk menutup InfoWindow
+    googleMarker.addListener("click", () => {
+        infoWindow.open(googleMap, googleMarker);
+    });
+}
+
 // Load markers when the page loads
-document.addEventListener("DOMContentLoaded", addMarkersToMaps);
+document.addEventListener("DOMContentLoaded", () => {
+    addMarkersToMaps();
+
+    // Tambahkan event listener untuk tombol View
+    const viewButtons = document.querySelectorAll(".view-button");
+    viewButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const marker = JSON.parse(button.getAttribute("data-marker"));
+            showPopup(marker); // Panggil fungsi showPopup
+        });
+    });
+});

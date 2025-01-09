@@ -129,7 +129,10 @@
                         <th class="py-3 px-4 text-left">Rating</th>
                         <th class="py-3 px-4 text-left">Latitude</th>
                         <th class="py-3 px-4 text-left">Longitude</th>
+                        <th class="py-3 px-4 text-left">View</th> <!-- Kolom View -->
                     </tr>
+                </thead>
+                </tr>
                 </thead>
                 <tbody>
                     @forelse ($markers as $marker)
@@ -141,6 +144,10 @@
                             <td class="py-2 px-4">{{ $marker->rate }}/5</td>
                             <td class="py-2 px-4">{{ $marker->latitude }}</td>
                             <td class="py-2 px-4">{{ $marker->longitude }}</td>
+                            <td class="py-2 px-4"><button
+                                    class="view-button bg-blue-500 text-white font-semibold py-1 px-3 rounded hover:bg-blue-600 transition duration-200"
+                                    data-marker='@json($marker)'>View</button>
+                            </td> <!-- Tombol View -->
                         </tr>
                     @empty
                         <tr>
