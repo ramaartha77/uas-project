@@ -13,6 +13,110 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
 }).addTo(leafletMap);
 
+// Initialize routing controls
+let leafletRoutingControl = null;
+const directionsService = new google.maps.DirectionsService();
+const directionsRenderer = new google.maps.DirectionsRenderer({
+    map: googleMap
+});
+
+// Add location search control
+const locationSearchControl = L.control({ position: 'topleft' });
+locationSearchControl.onAdd = function () {
+    const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+    div.innerHTML = `
+        <div class="bg-white p-2 rounded shadow-lg" style="min-width: 200px;">
+            <input type="text" id="start-location" class="w-full p-2 border rounded mb-2"
+                   placeholder="Enter your starting point">
+            <button id="get-location" class="bg-blue-500 text-white px-4 py-2 rounded w-full mb-2">
+                Use Current Location
+            </button>
+        </div>
+    `;
+    return div;
+};
+locationSearchControl.addTo(leafletMap);
+
+
+// Add location search to Google Maps
+const googleSearchBox = new google.maps.places.SearchBox(
+    document.getElementById('start-location')
+);
+
+
+// Initialize variables for start location
+let startLocation = null;
+
+// Get current location
+document.getElementById('get-location').addEventListener('click', () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                startLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                document.getElementById('start-location').value = `${startLocation.lat}, ${startLocation.lng}`;
+
+                // Update both maps
+                leafletMap.setView([startLocation.lat, startLocation.lng], 12);
+                googleMap.setCenter(startLocation);
+            },
+            (error) => {
+                console.error("Error getting location:", error);
+                alert("Unable to get your location. Please enter it manually.");
+            }
+        );
+    } else {
+        alert("Geolocation is not supported by your browser.");
+    }
+});
+
+// Function to calculate and display route
+function calculateRoute(destination) {
+    if (!startLocation) {
+        alert("Please set a starting location first!");
+        return;
+    }
+
+    // Clear existing routes
+    if (leafletRoutingControl) {
+        leafletMap.removeControl(leafletRoutingControl);
+    }
+    directionsRenderer.setMap(null);
+    directionsRenderer.setMap(googleMap);
+
+    // Calculate route for Leaflet
+    leafletRoutingControl = L.Routing.control({
+        waypoints: [
+            L.latLng(startLocation.lat, startLocation.lng),
+            L.latLng(destination.lat, destination.lng)
+        ],
+        routeWhileDragging: true,
+        showAlternatives: true,
+        fitSelectedRoutes: true,
+        lineOptions: {
+            styles: [{ color: '#0000ff', opacity: 0.6, weight: 6 }]
+        }
+    }).addTo(leafletMap);
+
+    // Calculate route for Google Maps
+    const request = {
+        origin: startLocation,
+        destination: destination,
+        travelMode: google.maps.TravelMode.DRIVING
+    };
+
+    directionsService.route(request, (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+            directionsRenderer.setDirections(result);
+        } else {
+            console.error("Error calculating route:", status);
+        }
+    });
+}
+
+
 // Create a single InfoWindow instance for Google Maps
 const googleInfoWindow = new google.maps.InfoWindow();
 
@@ -38,12 +142,12 @@ async function fetchMarkers() {
 // Functions to create popup content remain the same
 function createLeafletPopupContent(marker) {
     return `
-        <div class="flex flex-col max-w-xs rounded-lg shadow-lg bg-white">
+        <div class="flex flex-col max-w-xs rounded-lg shadow-lg bg-white ">
             ${
                 marker.image
                     ? `
-                <div class="relative w-full h-0" style="padding-bottom: 56.25%;">
-                    <img src="/storage/${marker.image}" alt="${marker.name}" class="absolute top-0 left-0 w-full h-full object-cover">
+                <div class="relative w-full h-0 overflow-hidden" style="padding-bottom: 56.25%;">
+                    <img src="/storage/${marker.image}" alt="${marker.name}" class="absolute top-0 left-0 w-full h-full object-cover overflow-hidden">
                 </div>
             `
                     : ""
@@ -210,6 +314,7 @@ async function addMarkersToMaps() {
 }
 
 // Function to show popup for specific marker
+
 function showPopup(marker) {
     const lat = parseFloat(marker.latitude);
     const lng = parseFloat(marker.longitude);
@@ -219,16 +324,34 @@ function showPopup(marker) {
     googleMap.setCenter({ lat, lng });
     googleMap.setZoom(12);
 
+    // Create popup content with route button
+    const leafletContent = createLeafletPopupContent(marker) + `
+        <div class="p-2 border-t">
+            <button onclick="calculateRoute({lat: ${lat}, lng: ${lng}})"
+                    class="bg-green-500 text-white px-4 py-2 rounded w-full">
+                Get Directions
+            </button>
+        </div>
+    `;
+
     // Show Leaflet popup
     if (leafletMarkers.has(marker.id)) {
         const leafletMarker = leafletMarkers.get(marker.id);
-        leafletMarker.openPopup();
+        leafletMarker.bindPopup(leafletContent).openPopup();
     }
 
-    // Show Google Maps popup
+    // Show Google Maps popup with route button
     if (googleMarkers.has(marker.id)) {
         const googleMarker = googleMarkers.get(marker.id);
-        googleInfoWindow.setContent(createGoogleMapsInfoContent(marker));
+        const googleContent = createGoogleMapsInfoContent(marker) + `
+            <div class="p-2 border-t">
+                <button onclick="calculateRoute({lat: ${lat}, lng: ${lng}})"
+                        class="bg-green-500 text-white px-4 py-2 rounded w-full">
+                    Get Directions
+                </button>
+            </div>
+        `;
+        googleInfoWindow.setContent(googleContent);
         googleInfoWindow.open(googleMap, googleMarker);
     }
 }
