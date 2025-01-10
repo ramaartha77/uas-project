@@ -17,67 +17,156 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 let leafletRoutingControl = null;
 const directionsService = new google.maps.DirectionsService();
 const directionsRenderer = new google.maps.DirectionsRenderer({
-    map: googleMap
+    map: googleMap,
 });
 
-// Add location search control
-const locationSearchControl = L.control({ position: 'topleft' });
-locationSearchControl.onAdd = function () {
-    const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-    div.innerHTML = `
-        <div class="bg-white p-2 rounded shadow-lg" style="min-width: 200px;">
-            <input type="text" id="start-location" class="w-full p-2 border rounded mb-2"
-                   placeholder="Enter your starting point">
-            <button id="get-location" class="bg-blue-500 text-white px-4 py-2 rounded w-full mb-2">
-                Use Current Location
-            </button>
-        </div>
-    `;
-    return div;
-};
-locationSearchControl.addTo(leafletMap);
+// Initialize location variables
+let startLocation = null;
+let endLocation = null;
+let startAddress = "";
+let endAddress = "";
 
+// Initialize geocoder
+const geocoder = new google.maps.Geocoder();
 
 // Add location search to Google Maps
 const googleSearchBox = new google.maps.places.SearchBox(
-    document.getElementById('start-location')
+    document.getElementById("start-location")
 );
 
+// Function to update route information display
+function updateRouteInfo() {
+    const routeInfo = document.getElementById("route-info");
+    const startAddressElement = document.getElementById("start-address");
+    const endAddressElement = document.getElementById("end-address");
 
-// Initialize variables for start location
-let startLocation = null;
+    if (startLocation || endLocation) {
+        routeInfo.classList.remove("hidden");
+        startAddressElement.textContent = startAddress || "Not set";
+        endAddressElement.textContent = endAddress || "Not set";
+    } else {
+        routeInfo.classList.add("hidden");
+    }
+}
+
+// Function to get address from coordinates
+async function getAddressFromCoordinates(lat, lng) {
+    return new Promise((resolve, reject) => {
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            if (status === "OK") {
+                if (results[0]) {
+                    resolve(results[0].formatted_address);
+                } else {
+                    resolve(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+                }
+            } else {
+                resolve(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+            }
+        });
+    });
+}
 
 // Get current location
-document.getElementById('get-location').addEventListener('click', () => {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                startLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                document.getElementById('start-location').value = `${startLocation.lat}, ${startLocation.lng}`;
+document
+    .getElementById("get-current-location")
+    .addEventListener("click", async () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    startLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    startAddress = await getAddressFromCoordinates(
+                        startLocation.lat,
+                        startLocation.lng
+                    );
+                    document.getElementById("start-location").value =
+                        startAddress;
 
-                // Update both maps
-                leafletMap.setView([startLocation.lat, startLocation.lng], 12);
-                googleMap.setCenter(startLocation);
-            },
-            (error) => {
-                console.error("Error getting location:", error);
-                alert("Unable to get your location. Please enter it manually.");
+                    // Update both maps
+                    leafletMap.setView(
+                        [startLocation.lat, startLocation.lng],
+                        12
+                    );
+                    googleMap.setCenter(startLocation);
+
+                    updateRouteInfo();
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                    alert(
+                        "Unable to get your location. Please enter it manually."
+                    );
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+    });
+
+// Set manual location
+document.getElementById("set-manual-location").addEventListener("click", () => {
+    const locationInput = document.getElementById("start-location").value;
+    if (locationInput) {
+        geocoder.geocode(
+            { address: locationInput },
+            async (results, status) => {
+                if (status === "OK" && results[0]) {
+                    startLocation = {
+                        lat: results[0].geometry.location.lat(),
+                        lng: results[0].geometry.location.lng(),
+                    };
+                    startAddress = results[0].formatted_address;
+
+                    leafletMap.setView(
+                        [startLocation.lat, startLocation.lng],
+                        12
+                    );
+                    googleMap.setCenter(startLocation);
+
+                    updateRouteInfo();
+                } else {
+                    alert(
+                        "Could not find the specified location. Please try again."
+                    );
+                }
             }
         );
     } else {
-        alert("Geolocation is not supported by your browser.");
+        alert("Please enter a starting location.");
     }
 });
 
+// Cancel route
+document.getElementById("cancel-route").addEventListener("click", () => {
+    // Clear routes
+    if (leafletRoutingControl) {
+        leafletMap.removeControl(leafletRoutingControl);
+        leafletRoutingControl = null;
+    }
+    directionsRenderer.setMap(null);
+
+    // Reset locations
+    endLocation = null;
+    endAddress = "";
+
+    // Update display
+    updateRouteInfo();
+});
+
 // Function to calculate and display route
-function calculateRoute(destination) {
+async function calculateRoute(destination) {
     if (!startLocation) {
         alert("Please set a starting location first!");
         return;
     }
+
+    endLocation = destination;
+    endAddress = await getAddressFromCoordinates(
+        destination.lat,
+        destination.lng
+    );
 
     // Clear existing routes
     if (leafletRoutingControl) {
@@ -90,38 +179,38 @@ function calculateRoute(destination) {
     leafletRoutingControl = L.Routing.control({
         waypoints: [
             L.latLng(startLocation.lat, startLocation.lng),
-            L.latLng(destination.lat, destination.lng)
+            L.latLng(destination.lat, destination.lng),
         ],
         routeWhileDragging: true,
         showAlternatives: true,
         fitSelectedRoutes: true,
         lineOptions: {
-            styles: [{ color: '#0000ff', opacity: 0.6, weight: 6 }]
-        }
+            styles: [{ color: "#0000ff", opacity: 0.6, weight: 6 }],
+        },
     }).addTo(leafletMap);
 
     // Calculate route for Google Maps
     const request = {
         origin: startLocation,
         destination: destination,
-        travelMode: google.maps.TravelMode.DRIVING
+        travelMode: google.maps.TravelMode.DRIVING,
     };
 
     directionsService.route(request, (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
             directionsRenderer.setDirections(result);
+            updateRouteInfo();
         } else {
             console.error("Error calculating route:", status);
         }
     });
 }
 
-
 // Create a single InfoWindow instance for Google Maps
 const googleInfoWindow = new google.maps.InfoWindow();
 
 // Store markers references
-let googleMarkers = new Map(); // Using Map to store marker references
+let googleMarkers = new Map();
 let leafletMarkers = new Map();
 
 // Function to fetch markers from the database
@@ -139,10 +228,13 @@ async function fetchMarkers() {
     }
 }
 
-// Functions to create popup content remain the same
+// Modified popup content creation functions to include route calculation
 function createLeafletPopupContent(marker) {
+    const lat = parseFloat(marker.latitude);
+    const lng = parseFloat(marker.longitude);
+
     return `
-        <div class="flex flex-col max-w-xs rounded-lg shadow-lg bg-white ">
+        <div class="flex flex-col max-w-xs rounded-lg shadow-lg bg-white">
             ${
                 marker.image
                     ? `
@@ -191,12 +283,22 @@ function createLeafletPopupContent(marker) {
                 `
                         : ""
                 }
+                <div class="mt-2 pt-2 border-t">
+                    <button onclick="calculateRoute({lat: ${lat}, lng: ${lng}})"
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded w-full flex items-center justify-center">
+                        <i class="fas fa-directions mr-2"></i>
+                        Get Directions
+                    </button>
+                </div>
             </div>
         </div>
     `;
 }
 
 function createGoogleMapsInfoContent(marker) {
+    const lat = parseFloat(marker.latitude);
+    const lng = parseFloat(marker.longitude);
+
     return `
         <div class="flex flex-col max-w-xs rounded-lg shadow-lg bg-white">
             ${
@@ -247,6 +349,13 @@ function createGoogleMapsInfoContent(marker) {
                 `
                         : ""
                 }
+                <div class="mt-2 pt-2 border-t">
+                    <button onclick="calculateRoute({lat: ${lat}, lng: ${lng}})"
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded w-full flex items-center justify-center">
+                        <i class="fas fa-directions mr-2"></i>
+                        Get Directions
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -254,13 +363,11 @@ function createGoogleMapsInfoContent(marker) {
 
 // Function to clear existing markers
 function clearMarkers() {
-    // Clear Google markers
     googleMarkers.forEach((marker) => {
         marker.setMap(null);
     });
     googleMarkers.clear();
 
-    // Clear Leaflet markers
     leafletMarkers.forEach((marker) => {
         leafletMap.removeLayer(marker);
     });
@@ -270,8 +377,6 @@ function clearMarkers() {
 // Function to add markers to both maps
 async function addMarkersToMaps() {
     const markers = await fetchMarkers();
-
-    // Clear existing markers first
     clearMarkers();
 
     markers.forEach((marker) => {
@@ -279,6 +384,11 @@ async function addMarkersToMaps() {
         const leafletMarker = L.marker([marker.latitude, marker.longitude])
             .addTo(leafletMap)
             .bindPopup(createLeafletPopupContent(marker));
+
+        // Add click handler for Leaflet marker
+        leafletMarker.on("click", () => {
+            leafletMarker.openPopup();
+        });
 
         leafletMarkers.set(marker.id, leafletMarker);
 
@@ -314,7 +424,6 @@ async function addMarkersToMaps() {
 }
 
 // Function to show popup for specific marker
-
 function showPopup(marker) {
     const lat = parseFloat(marker.latitude);
     const lng = parseFloat(marker.longitude);
@@ -324,34 +433,16 @@ function showPopup(marker) {
     googleMap.setCenter({ lat, lng });
     googleMap.setZoom(12);
 
-    // Create popup content with route button
-    const leafletContent = createLeafletPopupContent(marker) + `
-        <div class="p-2 border-t">
-            <button onclick="calculateRoute({lat: ${lat}, lng: ${lng}})"
-                    class="bg-green-500 text-white px-4 py-2 rounded w-full">
-                Get Directions
-            </button>
-        </div>
-    `;
-
     // Show Leaflet popup
     if (leafletMarkers.has(marker.id)) {
         const leafletMarker = leafletMarkers.get(marker.id);
-        leafletMarker.bindPopup(leafletContent).openPopup();
+        leafletMarker.bindPopup(createLeafletPopupContent(marker)).openPopup();
     }
 
-    // Show Google Maps popup with route button
+    // Show Google Maps popup
     if (googleMarkers.has(marker.id)) {
         const googleMarker = googleMarkers.get(marker.id);
-        const googleContent = createGoogleMapsInfoContent(marker) + `
-            <div class="p-2 border-t">
-                <button onclick="calculateRoute({lat: ${lat}, lng: ${lng}})"
-                        class="bg-green-500 text-white px-4 py-2 rounded w-full">
-                    Get Directions
-                </button>
-            </div>
-        `;
-        googleInfoWindow.setContent(googleContent);
+        googleInfoWindow.setContent(createGoogleMapsInfoContent(marker));
         googleInfoWindow.open(googleMap, googleMarker);
     }
 }

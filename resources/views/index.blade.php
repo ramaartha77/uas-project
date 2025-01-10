@@ -1,178 +1,139 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Interactive Map with Location Markers</title>
+@section('title', 'Interactive Location Map')
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+@section('content')
 
-    <!-- Leaflet.js CDN -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <body class="gradient-bg min-h-screen">
 
-    <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4lKVb0eLSNyhEO-C_8JoHhAvba6aZc3U&libraries=places">
-    </script>
+        <!-- Main Content -->
+        <div class="container mx-auto px-4 py-8">
+            <h1 class="text-4xl font-bold text-center mb-8 rainbow-text">
+                Interactive Location Map
+            </h1>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Leaflet Routing Machine -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
-
-
-    <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC4lKVb0eLSNyhEO-C_8JoHhAvba6aZc3U&libraries=places,directions">
-    </script>
-
-</head>
-
-<style>
-    .leaflet-popup-content {
-        margin: 0;
-        max-width: 200px;
-    }
-
-    .leaflet-popup-content p {
-        margin: 0.5em 0
-    }
-
-    .gm-style .gm-style-iw-c {
-        padding: 0;
-    }
-
-    .gm-style .gm-style-iw-c,
-    .gm-style .gm-style-iw-d {
-        max-height: none !important;
-        max-width: 200px;
-    }
-
-    .gm-style-iw-chr {
-        position: absolute;
-        top: 0;
-        right: 0;
-        z-index: 10;
-    }
-
-    .gm-style-iw-d {
-        overflow: visible;
-        max-height: none
-    }
-</style>
-
-<body class="bg-gray-100 font-sans min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-md p-4">
-        <div class="container mx-auto flex items-center justify-between">
-            <div class="flex space-x-6">
-                <a href="{{ route('markers.create') }}"
-                    class="text-gray-800 hover:text-blue-600 transition duration-300 flex items-center">
-                    <i class="fas fa-plus-circle mr-2"></i>
-                    <span class="font-semibold">Form Add Data</span>
-                </a>
-                <a href="{{ route('index') }}"
-                    class="text-gray-800 hover:text-blue-600 transition duration-300 flex items-center">
-                    <i class="fas fa-map-marked-alt mr-2"></i>
-                    <span class="font-semibold">Maps</span>
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-black font-bold text-center text-3xl mb-8">INTERACTIVE MAP WITH LARAVEL</h1>
-
-        <!-- Maps Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <div id="leaflet-map" class="h-96 rounded-lg shadow-lg"></div>
-            <div id="google-map" class="h-96 rounded-lg shadow-lg"></div>
-        </div>
-
-
-
-        <!-- Error Messages -->
-        @if ($errors->any())
-            <div class="max-w-2xl mx-auto mt-4">
-                <div class="bg-red-50 border-l-4 border-red-400 p-4">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                    clip-rule="evenodd" />
-                            </svg>
+            <!-- Location Control Panel -->
+            <div class="glass-effect rounded-3xl shadow-lg p-8 mb-8">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Starting Point Section -->
+                    <div class="space-y-4">
+                        <h3 class="text-2xl font-semibold text-gray-800 rainbow-text">Set Starting Point</h3>
+                        <button id="get-current-location"
+                            class="w-full button-gradient text-white font-medium px-6 py-3 rounded-full shadow-lg flex items-center justify-center space-x-2">
+                            <i class="fas fa-location-arrow"></i>
+                            <span>Use Current Location</span>
+                        </button>
+                        <div class="flex space-x-2">
+                            <input type="text" id="start-location"
+                                class="flex-1 px-4 py-2 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300"
+                                placeholder="Enter starting point">
+                            <button id="set-manual-location"
+                                class="button-gradient text-white px-6 py-2 rounded-full shadow-lg transition duration-300">
+                                <i class="fas fa-check"></i>
+                            </button>
                         </div>
-                        <div class="ml-3">
-                            <h3 class="text-sm font-medium text-red-800">There were errors with your submission:</h3>
-                            <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
+                    </div>
+
+                    <!-- Route Information -->
+                    <div id="route-info" class="hidden space-y-4">
+                        <h3 class="text-2xl font-semibold rainbow-text">Route Details</h3>
+                        <div class="space-y-3 bg-white bg-opacity-50 p-6 rounded-2xl">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-play-circle text-green-500 text-xl"></i>
+                                <span id="start-address" class="text-gray-700">Not set</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-flag-checkered text-red-500 text-xl"></i>
+                                <span id="end-address" class="text-gray-700">Not set</span>
+                            </div>
                         </div>
+                        <button id="cancel-route"
+                            class="w-full bg-red-500 hover:bg-red-600 text-white font-medium px-6 py-3 rounded-full shadow-lg transition duration-300 flex items-center justify-center space-x-2">
+                            <i class="fas fa-times"></i>
+                            <span>Cancel Route</span>
+                        </button>
                     </div>
                 </div>
             </div>
-        @endif
-    </div>
 
+            <!-- Maps Section -->
+            <div class="grid lg:grid-cols-2 gap-8 mb-12">
+                <div class="card glass-effect">
+                    <h3 class="text-xl font-semibold p-4 rainbow-text border-b border-purple-100">Leaflet Map</h3>
+                    <div id="leaflet-map" class="map-container"></div>
+                </div>
+                <div class="card glass-effect">
+                    <h3 class="text-xl font-semibold p-4 rainbow-text border-b border-blue-100">Google Map</h3>
+                    <div id="google-map" class="map-container"></div>
+                </div>
+            </div>
 
-    <!-- Data Table Section -->
-    <div class="container mx-auto mt-8">
-        <h2 class="text-lg font-bold mb-4">Data Lokasi</h2>
-        <div class="overflow-x-auto shadow-lg rounded-lg">
-            <table class="min-w-full bg-white">
-                <thead class="bg-gray-800 text-white">
-                    <tr>
-                        <th class="py-3 px-4 text-left">Nama</th>
-                        <th class="py-3 px-4 text-left">Deskripsi</th>
-                        <th class="py-3 px-4 text-left">Alamat</th>
-                        <th class="py-3 px-4 text-left">Harga</th>
-                        <th class="py-3 px-4 text-left">Rating</th>
-                        <th class="py-3 px-4 text-left">Latitude</th>
-                        <th class="py-3 px-4 text-left">Longitude</th>
-                        <th class="py-3 px-4 text-left">View</th> <!-- Kolom View -->
-                    </tr>
-                </thead>
-                </tr>
-                </thead>
-                <tbody>
-                    @forelse ($markers as $marker)
-                        <tr class="border-t">
-                            <td class="py-2 px-4">{{ $marker->name }}</td>
-                            <td class="py-2 px-4">{{ $marker->description }}</td>
-                            <td class="py-2 px-4">{{ $marker->address }}</td>
-                            <td class="py-2 px-4">{{ $marker->price }}</td>
-                            <td class="py-2 px-4">{{ $marker->rate }}/5</td>
-                            <td class="py-2 px-4">{{ $marker->latitude }}</td>
-                            <td class="py-2 px-4">{{ $marker->longitude }}</td>
-                            <td class="py-2 px-4"><button
-                                    class="view-button bg-blue-500 text-white font-semibold py-1 px-3 rounded hover:bg-blue-600 transition duration-200"
-                                    data-marker='@json($marker)'>View</button>
-                            </td> <!-- Tombol View -->
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="py-2 px-4 text-center text-gray-600">Tidak ada data yang tersedia.
-                            </td>
-                        </tr>
-                    @endforelse
-
-
-                </tbody>
-
-            </table>
+            <!-- Data Table Section -->
+            <div class="glass-effect rounded-3xl overflow-hidden">
+                <div class="p-6 border-b border-purple-100">
+                    <h2 class="text-2xl font-bold rainbow-text">Location Data</h2>
+                </div>
+                <div class="table-container">
+                    <table class="min-w-full divide-y divide-purple-100">
+                        <thead class="bg-white bg-opacity-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Description</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Address</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Rating</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Coordinates</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white bg-opacity-75 divide-y divide-purple-50">
+                            @forelse ($markers as $marker)
+                                <tr class="hover:bg-purple-50 transition duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ $marker->name }}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="max-w-xs overflow-hidden text-ellipsis">
+                                            {{ $marker->description }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">{{ $marker->address }}</td>
+                                    <td class="px-6 py-4">{{ $marker->price }}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-400">★</span>
+                                            <span class="ml-1">{{ $marker->rate }}/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="text-sm text-gray-600">
+                                            {{ $marker->latitude }}, {{ $marker->longitude }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <button
+                                            class="view-button button-gradient text-white font-medium py-2 px-4 rounded-full shadow-md"
+                                            data-marker='@json($marker)'>
+                                            View
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                        No data available
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="{{ asset('assets/script.js') }}"></script>
-</body>
-
-</html>
+    </body>
+@endsection
