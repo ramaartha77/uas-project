@@ -163,29 +163,74 @@
         overflow: visible;
         max-height: none;
     }
+
+    .nav-brand {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(45deg, #3498db, #2ecc71);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .nav-button {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .nav-button:hover {
+        transform: translateY(-2px);
+    }
+
+    .nav-button::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, #3498db, #2ecc71);
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.3s ease;
+    }
+
+    .nav-button:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
 </style>
 
 <body class="gradient-bg min-h-screen">
-    <!--Navbar -->
-    <nav class=" glass-effect w-full absolute top-0 z-50 shadow-lg">
-        <div class="container  mx-auto px-4">
-            <div class="flex items-center justify-center h-16">
-                <div class="flex space-x-8">
+    <nav class="glass-effect w-full fixed top-0 z-50 shadow-lg backdrop-blur-lg">
+        <div class="container mx-auto px-6">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo/Brand -->
+                <div class="flex-shrink-0">
+                    <span class="nav-brand">GeoMapper</span>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="flex items-center space-x-6 ">
                     <a href="{{ route('index') }}"
-                        class="nav-link text-gray-800 hover:text-blue-600 transition duration-300 flex items-center space-x-2 px-4 py-2 rounded-full bg-white bg-opacity-50 hover:bg-opacity-100">
-                        <i class="fas fa-map-marked-alt text-blue-500"></i>
-                        <span class="font-medium">View Map</span>
+                        class="nav-button group flex items-center space-x-3 px-5 py-2.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i
+                            class="fas fa-map-marked-alt text-2xl text-blue-500 group-hover:scale-110 transition-transform duration-300"></i>
+                        <span class="font-medium text-gray-800">View Map</span>
                     </a>
+
                     <a href="{{ route('markers.create') }}"
-                        class="nav-link text-gray-800 hover:text-purple-600 transition duration-300 flex items-center space-x-2 px-4 py-2 rounded-full bg-white bg-opacity-50 hover:bg-opacity-100">
-                        <i class="fas fa-plus-circle text-pink-500"></i>
-                        <span class="font-medium">Add Location</span>
+                        class="nav-button group flex items-center space-x-3 px-5 py-2.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i
+                            class="fas fa-plus-circle text-2xl text-green-500 group-hover:scale-110 transition-transform duration-300"></i>
+                        <span class="font-medium text-gray-800">Add Location</span>
                     </a>
+
                 </div>
             </div>
         </div>
     </nav>
-
     <!-- Content Section -->
     <div class="container mx-auto mt-24 mb-9">
         @yield('content')

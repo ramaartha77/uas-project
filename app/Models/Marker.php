@@ -24,7 +24,7 @@ class Marker extends Model
     protected $casts = [
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
-        'price' => 'decimal:2',
-        'rate' => 'decimal:2'
+        'price' => 'decimal:0',
+        'rate' => 'decimal:1'
     ];
 }

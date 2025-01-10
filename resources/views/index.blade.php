@@ -8,7 +8,7 @@
 
         <!-- Main Content -->
         <div class="container mx-auto px-4 py-8">
-            <h1 class="text-4xl font-bold text-center mb-8 rainbow-text">
+            <h1 class="text-4xl font-bold text-center mb-8 text-white">
                 Interactive Location Map
             </h1>
 
