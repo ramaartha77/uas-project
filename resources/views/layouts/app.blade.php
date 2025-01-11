@@ -40,6 +40,14 @@
 
                 <!-- Navigation Links -->
                 <div class="flex items-center space-x-6 ">
+
+                    <a href="{{ route('home') }}"
+                        class="nav-button group flex items-center space-x-3 px-5 py-2.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
+                        <i
+                            class="fas fa-home text-2xl text-green-500 group-hover:scale-110 transition-transform duration-300"></i>
+                        <span class="font-medium text-gray-800">Home</span>
+                    </a>
+
                     <a href="{{ route('index') }}"
                         class="nav-button group flex items-center space-x-3 px-5 py-2.5 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-300">
                         <i
@@ -62,6 +70,13 @@
     <div class="container mx-auto mt-24 mb-9">
         @yield('content')
     </div>
+
+    <!-- footer Section -->
+    <footer class=" text-white py-8">
+        <div class="container mx-auto text-center">
+            <p class="mb-2">© 2025 Jejak Hati. All Rights Reserved.</p>
+        </div>
+    </footer>
 </body>
 <!-- Scripts -->
 <script src="{{ asset('assets/script.js') }}"></script>
