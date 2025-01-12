@@ -29,7 +29,7 @@
     <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 </head>
 
-<body class="gradient-bg min-h-screen">
+<body class="gradient-bg min-h-screen ">
     <nav class="glass-effect w-full fixed top-0 z-50 shadow-lg backdrop-blur-lg">
         <div class="container mx-auto px-6">
             <div class="flex items-center justify-between h-20">
@@ -72,7 +72,7 @@
     </div>
 
     <!-- footer Section -->
-    <footer class=" text-white py-8">
+    <footer class=" text-white py-8 ">
         <div class="container mx-auto text-center">
             <p class="mb-2">© 2025 Jejak Hati. All Rights Reserved.</p>
         </div>
