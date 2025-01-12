@@ -9,7 +9,7 @@ class MarkerController extends Controller
 {
     public function create()
     {
-        $markers = Marker::all(); // Retrieve markers if needed
+        $markers = Marker::all();
         return view('markers.create', compact('markers'));
     }
 

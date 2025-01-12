@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="max-w-2xl mx-auto glass-effect p-8 rounded-3xl shadow-lg my-8">
-        <h2 class="text-3xl font-bold text-center mb-8 rainbow-text">Add New Location</h2>
+        <h2 class="text-3xl font-bold text-center mb-8 rainbow-text">Edit Location</h2>
 
         <form action="{{ route('markers.update', $marker->id) }}" method="POST" enctype="multipart/form-data"
             class="space-y-6">
@@ -13,12 +13,18 @@
 
             <div>
                 <label for="name" class="block text-lg font-medium rainbow-text mb-2">Location Name</label>
-                <input type="text" name="name" id="name" required
+                <input type="text" name="name" id="name" required value="{{ $marker->name }}"
                     class="w-full px-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300 glass-effect">
             </div>
 
             <div>
                 <label for="image" class="block text-lg font-medium rainbow-text mb-2">Image</label>
+                @if ($marker->image)
+                    <div class="mb-2">
+                        <img src="{{ asset('storage/' . $marker->image) }}" alt="{{ $marker->name }}"
+                            class="w-32 h-32 object-cover rounded-lg">
+                    </div>
+                @endif
                 <input type="file" name="image" id="image" accept="image/*"
                     class="w-full text-sm text-gray-700
                     file:mr-4 file:py-3 file:px-6
@@ -32,12 +38,14 @@
                 <div>
                     <label for="latitude" class="block text-lg font-medium rainbow-text mb-2">Latitude</label>
                     <input type="number" name="latitude" id="latitude" step="any" required
+                        value="{{ $marker->latitude }}"
                         class="w-full px-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300 glass-effect">
                 </div>
 
                 <div>
                     <label for="longitude" class="block text-lg font-medium rainbow-text mb-2">Longitude</label>
                     <input type="number" name="longitude" id="longitude" step="any" required
+                        value="{{ $marker->longitude }}"
                         class="w-full px-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300 glass-effect">
                 </div>
             </div>
@@ -45,12 +53,12 @@
             <div>
                 <label for="description" class="block text-lg font-medium rainbow-text mb-2">Description</label>
                 <textarea name="description" id="description" rows="3" required
-                    class="w-full px-4 py-3 rounded-2xl border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300 glass-effect"></textarea>
+                    class="w-full px-4 py-3 rounded-2xl border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300 glass-effect">{{ $marker->description }}</textarea>
             </div>
 
             <div>
                 <label for="address" class="block text-lg font-medium rainbow-text mb-2">Address</label>
-                <input type="text" name="address" id="address" required
+                <input type="text" name="address" id="address" required value="{{ $marker->address }}"
                     class="w-full px-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300 glass-effect">
             </div>
 
@@ -62,6 +70,7 @@
                             <span class="text-gray-600">Rp</span>
                         </div>
                         <input type="number" name="price" id="price" step="0.01" required
+                            value="{{ $marker->price }}"
                             class="w-full pl-12 px-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300 glass-effect">
                     </div>
                 </div>
@@ -69,7 +78,7 @@
                 <div>
                     <label for="rate" class="block text-lg font-medium rainbow-text mb-2">Rating</label>
                     <input type="number" name="rate" id="rate" min="0" max="5" step="0.1"
-                        required
+                        required value="{{ $marker->rate }}"
                         class="w-full px-4 py-3 rounded-full border-2 border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition duration-300 glass-effect">
                 </div>
             </div>
