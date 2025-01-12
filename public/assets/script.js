@@ -1,4 +1,4 @@
-// Initialize both maps
+// Inisialisasi Maps
 let leafletMap = L.map("leaflet-map").setView(
     [-8.371760437036368, 115.19692080521014],
     9
@@ -8,33 +8,33 @@ let googleMap = new google.maps.Map(document.getElementById("google-map"), {
     zoom: 9,
 });
 
-// Add Leaflet tile layer (OpenStreetMap)
+// Add Leaflet tile layer (OSM)
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
 }).addTo(leafletMap);
 
-// Initialize routing controls
+// routing controls
 let leafletRoutingControl = null;
 const directionsService = new google.maps.DirectionsService();
 const directionsRenderer = new google.maps.DirectionsRenderer({
     map: googleMap,
 });
 
-// Initialize location variables
+// Variable lokasi
 let startLocation = null;
 let endLocation = null;
 let startAddress = "";
 let endAddress = "";
 
-// Initialize geocoder
+// Inisialisasi geocoder
 const geocoder = new google.maps.Geocoder();
 
-// Add location search to Google Maps
+// Search Box Google Maps
 const googleSearchBox = new google.maps.places.SearchBox(
     document.getElementById("start-location")
 );
 
-// Function to update route information display
+// Update Information Display
 function updateRouteInfo() {
     const routeInfo = document.getElementById("route-info");
     const startAddressElement = document.getElementById("start-address");
@@ -49,7 +49,7 @@ function updateRouteInfo() {
     }
 }
 
-// Function to get address from coordinates
+// Fungsi Mendapatkan Alamat dari Kordinat
 async function getAddressFromCoordinates(lat, lng) {
     return new Promise((resolve, reject) => {
         geocoder.geocode({ location: { lat, lng } }, (results, status) => {
@@ -66,7 +66,7 @@ async function getAddressFromCoordinates(lat, lng) {
     });
 }
 
-// Get current location
+// Get lokasi saat ini
 document
     .getElementById("get-current-location")
     .addEventListener("click", async () => {
@@ -105,7 +105,7 @@ document
         }
     });
 
-// Set manual location
+// Set Lokasi Manual
 document.getElementById("set-manual-location").addEventListener("click", () => {
     const locationInput = document.getElementById("start-location").value;
     if (locationInput) {
@@ -155,7 +155,7 @@ document.getElementById("cancel-route").addEventListener("click", () => {
     updateRouteInfo();
 });
 
-// Function to calculate and display route
+// Function Menghitung dan Menampilkan routing
 async function calculateRoute(destination) {
     if (!startLocation) {
         alert("Please set a starting location first!");
@@ -213,7 +213,7 @@ const googleInfoWindow = new google.maps.InfoWindow();
 let googleMarkers = new Map();
 let leafletMarkers = new Map();
 
-// Function to fetch markers from the database
+// Fetch data dari Databasse
 async function fetchMarkers() {
     try {
         const response = await fetch("/api/markers");
@@ -228,7 +228,7 @@ async function fetchMarkers() {
     }
 }
 
-// Modified popup content creation functions to include route calculation
+// Popup Marker
 function createLeafletPopupContent(marker) {
     const lat = parseFloat(marker.latitude);
     const lng = parseFloat(marker.longitude);
@@ -361,7 +361,6 @@ function createGoogleMapsInfoContent(marker) {
     `;
 }
 
-// Function to clear existing markers
 function clearMarkers() {
     googleMarkers.forEach((marker) => {
         marker.setMap(null);
@@ -374,7 +373,7 @@ function clearMarkers() {
     leafletMarkers.clear();
 }
 
-// Function to add markers to both maps
+// Add Marker OSM dan GMaps
 async function addMarkersToMaps() {
     const markers = await fetchMarkers();
     clearMarkers();
@@ -423,7 +422,7 @@ async function addMarkersToMaps() {
     }
 }
 
-// Function to show popup for specific marker
+// Show Pop Up Marker
 function showPopup(marker) {
     const lat = parseFloat(marker.latitude);
     const lng = parseFloat(marker.longitude);
@@ -447,7 +446,7 @@ function showPopup(marker) {
     }
 }
 
-// Load markers when the page loads
+// Load Marker
 document.addEventListener("DOMContentLoaded", () => {
     addMarkersToMaps();
 

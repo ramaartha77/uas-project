@@ -6,9 +6,9 @@ use App\Http\Controllers\MarkerController;
 
 
 
-Route::get('/', [MarkerController::class, 'index'])->name('index');
+Route::get('/recommendation', [MarkerController::class, 'index'])->name('index');
 
-Route::get('/home', function () {
+Route::get('/', function () {
     return view('home');
 })->name('home');
 
